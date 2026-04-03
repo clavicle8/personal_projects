@@ -33,11 +33,11 @@ double tee_z = 0.03175*2; //measured half (radius)
 
 void sim(){
     Geometry geom(MODE_3D, Int3D(tee_x, tee_y, tee_z), Vec3d(0,0,0), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
-    STLSolid *s1 chamber('dn63 tee.stl');// import stl for chamber
+    Solid *s1 = chamber("dn63 tee.stl");// import stl for chamber
     geom.set_solid(s1,7); //pointer
-    STLSolid *s2 cathode('cathodegrid.stl'); //import stl for grid
+    STLSolid *s2 cathode("cathodegrid.stl"); //import stl for grid
     geom.set_solid(s2,8); //pointer
-    STL Solid *s3 anode('anodegrid.stl');
+    STL Solid *s3 anode("anodegrid.stl");
     geom.set_solid(s3,9)
 
     geom.set_boundary(1, BOUND_NEUMANN, 0);//def bound conditions
