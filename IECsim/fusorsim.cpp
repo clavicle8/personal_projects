@@ -3,6 +3,11 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <random>
+#include <map>
+#include <string>
+#include <cmath>
+
 #include "epot_gssolver.hpp"
 #include "epot_mgsolver.hpp"
 #include "epot_bicgstabsolver.hpp"
@@ -35,6 +40,17 @@ double tee_z = 0.03175*2; //measured half (radius)
 int n_nodes_x = (int) tee_x/h;
 int n_nodes_y = (int) tee_y/h;
 int n_nodes_z = (int) tee_z/h;
+
+
+random_device rd{};
+mt19937 gen{rd()};
+normal_distribution<double> d{0.0,1.0};
+double gaussian(){
+    return d(gen);
+}
+
+
+
 
 void sim(){
     Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(0,0,0), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
@@ -77,6 +93,7 @@ void sim(){
     /*
     * We randomly sample 
     */
+   
 
 
 
