@@ -1,6 +1,6 @@
 
-/*
-* Calvin Dai April 2nd 2026
+/* Calvin Dai April 2nd 2026
+* INTRODUCTION
 * Calculator to determine whether a 3 (circular) wire IEC spherical grid (one in each plane, xyz) will survive (thermally) a certain current
 * Assumes vacuum environment ==> only heat dissipation is through radiation (Stefan-Boltzmann law)
 * Models grid as 12 identical wire segments (resistors). Resistance measurement is at nodes on opposite sides of the grid. The 4 middle resistors between the measurement nodes
