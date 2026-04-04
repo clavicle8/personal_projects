@@ -43,12 +43,15 @@ int n_nodes_z = (int) tee_z/h;
 
 
 random_device rd{};
-mt19937 gen{rd()};
+mt19937 gen{rd()}; //mersenne-twister-engine: random number generator. 
 normal_distribution<double> d{0.0,1.0};
 double gaussian(){
-    return d(gen);
+    return d(gen);  //pluck a random number from the gaussian
 }
 
+Vec3D sampleppnt(double r){ //samples a point on a sphere of radius r
+    
+}
 
 
 
