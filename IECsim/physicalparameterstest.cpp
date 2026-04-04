@@ -2,6 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <random>
 #include <map>
 #include <string>
