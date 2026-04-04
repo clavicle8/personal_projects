@@ -1,4 +1,3 @@
-
 #include <cstdlib>
 #include <sstream>
 #include <fstream>
@@ -31,6 +30,7 @@ using namespace std;
 double h = 0.0001; //mesh cell size
 double cathodepot = 5000.0; //cathode and anode potentials in volts
 double anodepot = 0.0; 
+double anode_r = 15*1.33 * 1e-3; //(roughly 19.95mm)
 
 //tee geom in metres
 double tee_x = 0.127; 
@@ -49,8 +49,13 @@ double gaussian(){
     return d(gen);  //pluck a random number from the gaussian
 }
 
-Vec3D sampleppnt(double r){ //samples a point on a sphere of radius r
-    
+Vec3D sample(double r){ //samples a point on a sphere of radius r
+    double x = gaussian();
+    double y = gaussian();
+    double z = gaussian();
+    double normalisation = 1/pow(x*x + y*y + z*z ,0.5); //Muller 1959, Marsaglia 1972, as seen in Weisstein (Wolfram Mathworld)
+
+    return Vec3D(x * normalisation * anode_r, y * normalisation * anode_r, z * normalisation * anode_r);
 }
 
 
