@@ -52,6 +52,8 @@ double gaussian(){
 
 
 
+
+
 void sim(){
     Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(0,0,0), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
 
@@ -104,3 +106,4 @@ void sim(){
 
 
 }
+
