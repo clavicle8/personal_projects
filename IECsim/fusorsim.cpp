@@ -33,7 +33,7 @@ double R = 8.314; //(joules per mole per kelvin)
 double k = 1.3806488 * 1e-23; //boltzmann constant
 double p_mbar = 9 * 1e-3; 
 double n = p_mbar/(k*starting_temp); //number density
-double N = n * V
+double N = n * V;
 
 
 double h = 0.0001; //mesh cell size
@@ -67,7 +67,7 @@ Vec3D sample(double r){ //samples a point on a sphere of radius r
     return Vec3D(x * normalisation * anode_r, y * normalisation * anode_r, z * normalisation * anode_r);
 }
 
-int num_particles(pressure){
+int num_particles(double pressure){
 
 }
 

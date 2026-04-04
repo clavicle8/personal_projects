@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void main(){
+int main(){
     //physical parameters
     double starting_temp = 20.0 + 273.0;
     double V = 337126.98779 * 1e-9;
