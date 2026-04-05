@@ -31,19 +31,27 @@
 #include "geomplotter.hpp"
 #include "config.h"
 #include "stl_solid.hpp"
+#include "particles.hpp"
 
 using namespace std;
 
 //physical parameters
-double starting_temp = 20.0 + 273.0;
-double V = 337126.98779 * 1e-9;
-double R = 8.314; //(joules per mole per kelvin)
-double k = 1.3806488 * 1e-23; //boltzmann constant
-double p_mbar = 9 * 1e-3; 
-double n = p_mbar/(k*starting_temp); //number density
-long N_lab = round(n*V); //lab no. of particles. comes out as 750041320067570 particles: too many.
+const double T_0 = 20.0 + 273.0;//starting temperature
+const double V = 337126.98779 * 1e-9;
+const double R_const = 8.314; //(joules per mole per kelvin)
+const double k = 1.3806488 * 1e-23; //boltzmann constant
+const double p_mbar = 9 * 1e-3; 
+const double n = p_mbar/(k*T_0); //number density
+const long N_lab = round(n*V); //lab no. of particles. comes out as 750041320067570 particles: too many.
 // can simplify by treating particles as "clouds" (Vlasov 1950)
-long N_clouds;
+const long N_clouds;
+const double IQ;
+const double m = 28.0134; // u
+const double q = 1; //e
+ //TODO: query directly from NIST database
+
+//Thermal gas molecule speed calculations
+const double a = sqrt(k*T_0/m);
 
 
 
@@ -63,20 +71,35 @@ int n_nodes_y = (int) tee_y/h;
 int n_nodes_z = (int) tee_z/h;
 
 
-random_device rd{};
-mt19937 gen{rd()}; //mersenne-twister-engine: random number generator. 
-normal_distribution<double> d{0.0,1.0};
+random_device rd1{};
+mt19937 gen{rd1()}; //mersenne-twister-engine: random number generator. 
+normal_distribution<double> d1{0.0,1.0};
 double gaussian(){
-    return d(gen);  //pluck a random number from the gaussian
+    return d1(gen);  //pluck a random number from the gaussian
 }
 
-Vec3D sample(double r){ //samples a point on a sphere of radius r
+
+// random_device rd2;
+// mt19937 gen{rd2()};
+
+
+// double m_b_dist_velo(){
+
+// }
+
+
+ParticleP3D sample(double rad){ //samples a point on a sphere of radius r
     double x = gaussian();
     double y = gaussian();
     double z = gaussian();
     double normalisation = 1/pow(x*x + y*y + z*z ,0.5); //Muller 1959, Marsaglia 1972, as seen in Weisstein (Wolfram Mathworld)
+    
+    double x_f = x * normalisation * rad;
+    double y_f = y * normalisation * rad;
+    double z_f = z * normalisation * rad;
+    //return Vec3D(x * normalisation * anode_r, y * normalisation * anode_r, z * normalisation * anode_r);
 
-    return Vec3D(x * normalisation * anode_r, y * normalisation * anode_r, z * normalisation * anode_r);
+    return ParticleP3D(0, x_f, 0.0 , y_f, 0.0, z_f, 0.0);
 }
 
 
@@ -127,7 +150,8 @@ void sim(){
     */
 
     for (long i = 1; i <= N_clouds; i++ ){
-        pdb.add_particle()
+        pdb.add_particle(0, 1, m, sample(anode_r));
+    
     }
 
    
