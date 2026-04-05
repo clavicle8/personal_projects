@@ -17,7 +17,7 @@ const double R = 8.314;
 
 const double m = 28.0134; // u
 const double q = 1; //e
- //TODO: query directly from NIST database
+//TODO: query directly from NIST database
 
 //Thermal gas molecule speed calculations
 const double T_0 = 20.0 + 273.0;//starting temperature
