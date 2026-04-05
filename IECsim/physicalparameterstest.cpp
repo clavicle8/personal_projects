@@ -18,7 +18,9 @@ int main(){
     double k = 1.3806488 * 1e-23; //boltzmann constant
     double p_mbar = 9 * 1e-3; 
     double n = p_mbar/(k*starting_temp); //number density
-    double N = n * V;
+    double N = n*V;
+    long num = round(N); //int is too low lol
 
-    cout << N << "\n";
+    cout << setprecision(100) << N << "\n";
+    cout << setprecision(100) << num << "\n";
 }
