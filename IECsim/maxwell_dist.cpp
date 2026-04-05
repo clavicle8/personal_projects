@@ -30,3 +30,5 @@ int main(){
     //cout << a << "\n";
     cout << "The mean velocity for a deuterium atom of mass " << m <<"u"<< " is " << mean_velo << " m/s" << "\n";
 }
+
+//Output: The mean velocity for a deuterium atom of mass 2.0141u is 7.15163e-11 m/s
