@@ -1,3 +1,11 @@
+/*
+*PIC Vlasov-Poisson Iterator
+*Goal: produce a convergent potential map for a tee-fusor system to see if we can get a relatively uniform field
+*using a second anode grid, and get a double potential well setup
+*Second goal: see if it works with a fully spherical chamber and grids. 
+*/
+
+
 #include <cstdlib>
 #include <sstream>
 #include <fstream>
@@ -33,7 +41,11 @@ double R = 8.314; //(joules per mole per kelvin)
 double k = 1.3806488 * 1e-23; //boltzmann constant
 double p_mbar = 9 * 1e-3; 
 double n = p_mbar/(k*starting_temp); //number density
-int N = round(n*V);
+long N_lab = round(n*V); //lab no. of particles. comes out as 750041320067570 particles: too many.
+// can simplify by treating particles as "clouds" (Vlasov 1950)
+long N_clouds;
+
+
 
 
 double h = 0.0001; //mesh cell size
@@ -67,11 +79,6 @@ Vec3D sample(double r){ //samples a point on a sphere of radius r
     return Vec3D(x * normalisation * anode_r, y * normalisation * anode_r, z * normalisation * anode_r);
 }
 
-int num_particles(double pressure){
-
-}
-
-
 
 void sim(){
     Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(0,0,0), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
@@ -91,20 +98,23 @@ void sim(){
     geom.set_boundary(8, Bound(BOUND_DIRICHLET, cathodepot));
     geom.set_boundary(9, Bound(BOUND_DIRICHLET, anodepot));
 
-    geom.build_mesh();
+    geom.build_mesh(); //create node mesh
+    geom.build_surface(); //create surfaces on the solids so that the code can recognise when particles hit the surfaces. 
     
     
     EpotBiCGSTABSolver solver(geom); //declare biconjugate gradient stabilized method for solver
 
-    EpotField epot(geom);
+    EpotField epot(geom); //declare epot field, space charge, b field objects
     MeshScalarField scharge(geom);
-    MeshVectorField bfield;
+    MeshVectorField bfield; //empty: no b field limit 
 
-    EpotEfield efield(epot);
-    ParticleDataBase3D pdb(geom);
-    pdb.set_surface_collision(true);
+    EpotEfield efield(epot); //declare e field
+    ParticleDataBase3D pdb(geom);  //initialise particle database
+    pdb.set_surface_collision(true); 
 
-    Emittance emit;
+    Emittance emit;  //declare emittance statistics class. no idea about the math, but qualitatively its a measure of beam quality
+
+    
     Convergence conv;
     conv.add_epot(epot);
     conv.add_scharge(scharge);
@@ -115,6 +125,11 @@ void sim(){
     * We randomly sample n points on a sphere as particles in our system. 
     * A
     */
+
+    for (long i = 1; i <= N_clouds; i++ ){
+        pdb.add_particle()
+    }
+
    
 
 
