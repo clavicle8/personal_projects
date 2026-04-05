@@ -14,8 +14,9 @@ using namespace std;
 const double pi = 3.14159265358979323846;
 const double k = 1.3806488 * 1e-23;
 const double R = 8.314;
+const double u = 1.6605390689252 * 1e-27;
 
-const double m = 2.0141017778; // u
+const double m = 2.0141017778 * u; // kg
 const double q = 1; //e
 //TODO: query directly from NIST database
 
@@ -28,7 +29,7 @@ const double a = sqrt(k*T_0/m);
 int main(){
     double mean_velo = 2*a*sqrt(2/pi);
     //cout << a << "\n";
-    cout << "The mean velocity for a deuterium atom of mass " << m <<"u"<< " is " << mean_velo << " m/s" << "\n";
+    cout << "The mean velocity for a deuterium atom of mass " << m <<"kg"<< " is " << mean_velo << " m/s" << "\n";
 }
 
-//Output: The mean velocity for a deuterium atom of mass 2.0141u is 7.15163e-11 m/s
+//The mean velocity for a deuterium atom of mass 3.34449e-27kg is 1755.01 m/s
