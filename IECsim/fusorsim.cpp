@@ -48,10 +48,9 @@ const long N_clouds;
 const double IQ;
 const double m = 28.0134; // u
 const double q = 1; //e
- //TODO: query directly from NIST database
 
-//Thermal gas molecule speed calculations
-const double a = sqrt(k*T_0/m);
+// //Thermal gas molecule speed calculations
+// const double a = sqrt(k*T_0/m);
 
 
 
@@ -151,7 +150,6 @@ void sim(){
 
     for (long i = 1; i <= N_clouds; i++ ){
         pdb.add_particle(0, 1, m, sample(anode_r));
-    
     }
 
    
