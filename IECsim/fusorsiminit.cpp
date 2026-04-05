@@ -79,10 +79,10 @@ void sim(){
     solver.solve(epot, scharge);
 
     GeomPlotter gplotter(geom);
-    gplotter.set_size(1024, 768);
-    gplotter.set_view(VIEW_XY, 0);
+    gplotter.set_size(2048, 768);
+    gplotter.set_view(VIEW_XZ, 0);
     gplotter.set_epot(&epot);
-    gplotter.plot_png("potential_xy.png");
+    gplotter.plot_png("potential_xz.png");
 
     // ofstream ostr( "solver3d_sphere.dat" );  //output file stream
     // ostr << "# "
