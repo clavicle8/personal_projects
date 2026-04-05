@@ -27,22 +27,30 @@
 
 using namespace std;
 
-double h = 0.0001; //mesh cell size
+double h = 0.0005; //mesh cell size
 double cathodepot = 5000.0; //cathode and anode potentials in volts
 double anodepot = 0.0; 
 double anode_r = 15*1.33 * 1e-3; //(roughly 19.95mm)
 
 //tee geom in metres
-double tee_x = 0.127; 
-double tee_y = 0.0955*2;  //measured half
-double tee_z = 0.03175*2; //measured half (radius)
+// double tee_x = 0.127; 
+// double tee_y = 0.0955*2;  //measured half
+// double tee_z = 0.03175*2; //measured half (radius)
 
-int n_nodes_x = (int) tee_x/h;
-int n_nodes_y = (int) tee_y/h;
-int n_nodes_z = (int) tee_z/h;
+// int n_nodes_x = (int) tee_x/h;
+// int n_nodes_y = (int) tee_y/h;
+// int n_nodes_z = (int) tee_z/h;
+
+double sim_x = 0.048; 
+double sim_y = 0.048;  //measured half
+double sim_z = 0.048;  //measured half (radius)
+
+int n_nodes_x = (int) (sim_x/h);
+int n_nodes_y = (int) (sim_y/h);
+int n_nodes_z = (int) (sim_z/h);
 
 void sim(){
-    Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(0,0,0), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
+    Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(-0.024,-0.024,-0.024), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
 
     Solid *s1 = new STLSolid("dn63 tee.stl");
     geom.set_solid(7,s1);
@@ -103,4 +111,15 @@ void sim(){
 
     // ostr.close();
     
+}
+
+int main(int argc, char **argv) {
+    try {
+        ibsimu.set_message_threshold(MSG_VERBOSE, 1);
+        sim();
+    } catch(Error e) {
+        e.print_error_message(ibsimu.message(0));
+        exit(1);
+    }
+    return 0;
 }
