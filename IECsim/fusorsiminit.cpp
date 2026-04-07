@@ -86,7 +86,7 @@ void sim(){
     gplotter.plot_png("-1_xz.png");
 
     gplotter.set_size(2048, 2048);
-    gplotter.set_view(VIEW_XY, 0);
+    gplotter.set_view(VIEW_XY, -1);
     gplotter.plot_png("0_xy.png");
 
 
