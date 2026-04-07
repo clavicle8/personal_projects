@@ -50,13 +50,13 @@ int n_nodes_y = (int) (sim_y/h);
 int n_nodes_z = (int) (sim_z/h);
 
 void sim(){
-    Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(-0.024,-0.0,-0.03175), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
+    Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(-0.024,-0.024,-0.03175), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
 
     Solid *s1 = new STLSolid("dn63 tee.stl");
     geom.set_solid(7,s1);
-    Solid *s2 = new STLSolid("cathodegrid.stl");
+    Solid *s2 = new STLSolid("cathodegrid_correct_wire.stl");
     geom.set_solid(8,s2);
-    Solid *s3 = new STLSolid("anodegrid.stl");
+    Solid *s3 = new STLSolid("anodegrid_correct_wire.stl");
     geom.set_solid(9,s3);
     
     for (uint32_t i = 1; i <= 6; i++){ //loop to set Neumann boundary condition for 6 simulation space faces
@@ -68,7 +68,7 @@ void sim(){
     geom.set_boundary(9, Bound(BOUND_DIRICHLET, anodepot));
 
     geom.build_mesh(); //create node mesh
-    geom.build_surface(); //create surfaces on the solids so that the code can recognise when particles hit the surfaces.
+    //geom.build_surface(); //create surfaces on the solids so that the code can recognise when particles hit the surfaces.
     EpotBiCGSTABSolver solver(geom); //declare biconjugate gradient stabilized method for solver
 
     EpotField epot(geom); //declare epot field, space charge, b field objects
@@ -79,10 +79,15 @@ void sim(){
     solver.solve(epot, scharge);
 
     GeomPlotter gplotter(geom);
-    gplotter.set_size(4096,4096);
+    gplotter.set_size(2048, 2048);
     gplotter.set_view(VIEW_XZ, -1);
+
     gplotter.set_epot(&epot);
-    gplotter.plot_png("potential_xz_4096x4096.png");
+    gplotter.plot_png("-1_xz.png");
+
+    gplotter.set_size(2048, 2048);
+    gplotter.set_view(VIEW_XY, 0);
+    gplotter.plot_png("0_xy.png");
 
 
     // ofstream ostr( "solver3d_sphere.dat" );  //output file stream
