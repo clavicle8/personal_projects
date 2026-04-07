@@ -27,7 +27,7 @@
 
 using namespace std;
 
-double h = 0.0005; //mesh cell size
+double h = 0.0003; //mesh cell size
 double cathodepot = 5000.0; //cathode and anode potentials in volts
 double anodepot = 0.0; 
 double anode_r = 15*1.33 * 1e-3; //(roughly 19.95mm)
@@ -50,7 +50,7 @@ int n_nodes_y = (int) (sim_y/h);
 int n_nodes_z = (int) (sim_z/h);
 
 void sim(){
-    Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(-0.024,-0.048,-0.03175), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
+    Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(-0.03175,-0.048,-0.03175), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
 
     Solid *s1 = new STLSolid("dn63 tee.stl");
     geom.set_solid(7,s1);
