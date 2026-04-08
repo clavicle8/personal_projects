@@ -72,27 +72,16 @@ int n_nodes_z = (int) tee_z/h;
 
 random_device rd1{};
 mt19937 gen{rd1()}; //mersenne-twister-engine: random number generator. 
-normal_distribution<double> d1{0.0,1.0};
+normal_distribution<double> d1{0.0,1.0};  
 double gaussian(){
     return d1(gen);  //pluck a random number from the gaussian
 }
-
-
-// random_device rd2;
-// mt19937 gen{rd2()};
-
-
-// double m_b_dist_velo(){
-
-// }
-
 
 ParticleP3D sample(double rad){ //samples a point on a sphere of radius r
     double x = gaussian();
     double y = gaussian();
     double z = gaussian();
     double normalisation = 1/pow(x*x + y*y + z*z ,0.5); //Muller 1959, Marsaglia 1972, as seen in Weisstein (Wolfram Mathworld)
-    
     double x_f = x * normalisation * rad;
     double y_f = y * normalisation * rad;
     double z_f = z * normalisation * rad;
@@ -121,7 +110,7 @@ void sim(){
     geom.set_boundary(9, Bound(BOUND_DIRICHLET, anodepot));
 
     geom.build_mesh(); //create node mesh
-    geom.build_surface(); //create surfaces on the solids so that the code can recognise when particles hit the surfaces. 
+    //geom.build_surface(); //create surfaces on the solids so that the code can recognise when particles hit the surfaces. 
     
     
     EpotBiCGSTABSolver solver(geom); //declare biconjugate gradient stabilized method for solver
@@ -132,11 +121,9 @@ void sim(){
 
     EpotEfield efield(epot); //declare e field
     ParticleDataBase3D pdb(geom);  //initialise particle database
-    pdb.set_surface_collision(true); 
+    //pdb.set_surface_collision(true); 
 
     Emittance emit;  //declare emittance statistics class. no idea about the math, but qualitatively its a measure of beam quality
-
-    
     Convergence conv;
     conv.add_epot(epot);
     conv.add_scharge(scharge);
@@ -151,16 +138,6 @@ void sim(){
     for (long i = 1; i <= N_clouds; i++ ){
         pdb.add_particle(0, 1, m, sample(anode_r));
     }
-
-   
-
-
-
-
-    
-    
-
-
 
 }
 
