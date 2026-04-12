@@ -120,7 +120,7 @@ void sim(int argc, char **argv){
     */
 
     for (long i = 1; i <= N_clouds; i++ ){
-        pdb.add_particle(0, 1, m, sample(anode_r));
+        pdb.add_particle(IQ, 1, m, sample(anode_r));
     }
 
 }
