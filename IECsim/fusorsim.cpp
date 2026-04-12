@@ -91,13 +91,31 @@ ParticleP3D sample(double rad){ //samples a point on a sphere of radius r
 
 
 void sim(int argc, char **argv){
-    string geom_fn = "geom.dat";
-    ifstream is_geom(geom_fn.c_str());
-    if (!is_geom.good())
-        throw( Error( ERROR_LOCATION, (std::string)"couldn\'t open file \'" + geom_fn + "\'" ) );
-    Geometry geom( is_geom );
-    is_geom.close();
+    // string geom_fn = "geom.dat";
+    // ifstream is_geom(geom_fn.c_str());
+    // if (!is_geom.good())
+    //     throw( Error( ERROR_LOCATION, (std::string)"couldn\'t open file \'" + geom_fn + "\'" ) );
+    // Geometry geom( is_geom );
+    // is_geom.close();
     //geom.build_surface();
+    Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(-0.03175,-0.048,-0.03175), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
+
+    Solid *s1 = new STLSolid("dn63 tee.stl");
+    geom.set_solid(7,s1);
+    Solid *s2 = new STLSolid("cathodegrid_correct_wire.stl");
+    geom.set_solid(8,s2);
+    Solid *s3 = new STLSolid("anodegrid_correct_wire.stl");
+    geom.set_solid(9,s3);
+    
+    for (uint32_t i = 1; i <= 6; i++){ //loop to set Neumann boundary condition for 6 simulation space faces
+        geom.set_boundary(i, Bound(BOUND_NEUMANN, 0.0));
+    }
+
+    geom.set_boundary(7, Bound(BOUND_DIRICHLET, 0.0));
+    geom.set_boundary(8, Bound(BOUND_DIRICHLET, cathodepot));
+    geom.set_boundary(9, Bound(BOUND_DIRICHLET, anodepot));
+
+    geom.build_mesh(); //create node mesh
 
     EpotBiCGSTABSolver solver(geom); //declare biconjugate gradient stabilized method for solver
 
@@ -134,12 +152,13 @@ void sim(int argc, char **argv){
     GeomPlotter gplotter(geom);
     gplotter.set_size(2048, 2048);
     gplotter.set_view(VIEW_XZ, -1);
+    gplotter.set_ranges(-0.03175, -0.03175, 0.04745, 0.03095);
     gplotter.set_epot(&epot);
     gplotter.set_particle_database(&pdb);
     gplotter.set_particle_div(1); // plot all particles
     gplotter.set_trajdens(&tdens);
     gplotter.set_fieldgraph_plot(FIELD_TRAJDENS);
-    gplotter.plot_png("trajdens_xz_1000.png");
+    gplotter.plot_png("trajdens_xz_1000_3.png");
 
     gplotter.set_particle_database(NULL);
     gplotter.set_trajdens(NULL);
@@ -148,7 +167,21 @@ void sim(int argc, char **argv){
     gplotter.set_size(2048, 2048);
     gplotter.set_view(VIEW_XZ, -1);
     gplotter.set_epot(&epot);
-    gplotter.plot_png("-1_xz_final_1000.png");
+    gplotter.plot_png("-1_xz_final_1000_3.png");
+
+    ofstream ostr("potential_radial.dat");
+    ostr << "# r (m)    potential (V)\n";
+    for (uint32_t a = 0; a < geom.size(0); a++) {
+    double x = geom.origo(0) + a * geom.h();
+    double y = 0.0;
+    double z = 0.0;
+    // find node indices for y=0, z=0
+    uint32_t b = (uint32_t)((y - geom.origo(1)) / geom.h());
+    uint32_t c = (uint32_t)((z - geom.origo(2)) / geom.h());
+    double r = x; // radial distance along x axis
+    ostr << setw(14) << r << " " << setw(14) << epot(a, b, c) << "\n";
+}
+ostr.close();   
 
 }
 
