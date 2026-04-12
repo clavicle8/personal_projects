@@ -36,16 +36,18 @@
 using namespace std;
 
 //physical parameters
+//const double u = 1.66053906892; //atomic mass unit
 const double T_0 = 20.0 + 273.0;//starting temperature
-const double V = 337126.98779 * 1e-9;
+const double V = 337126.98779 * 1e-9; //calculated from CAD
 const double R_const = 8.314; //(joules per mole per kelvin)
 const double k = 1.3806488 * 1e-23; //boltzmann constant
 const double p_mbar = 9 * 1e-3; 
 const double n = p_mbar/(k*T_0); //number density
 const long N_lab = round(n*V); //lab no. of particles. comes out as 750041320067570 particles: too many.
 // can simplify by treating particles as "clouds" (Vlasov 1950)
-const long N_clouds;
-const double IQ;
+const double beam_current = 2.0 *1e-3;
+const long N_clouds = 1000;
+const double IQ = beam_current/((double) N_clouds);
 const double m = 28.0134; // u
 const double q = 1; //e
 
@@ -95,7 +97,7 @@ void sim(int argc, char **argv){
         throw( Error( ERROR_LOCATION, (std::string)"couldn\'t open file \'" + geom_fn + "\'" ) );
     Geometry geom( is_geom );
     is_geom.close();
-    geom.build_surface();
+    //geom.build_surface();
 
     EpotBiCGSTABSolver solver(geom); //declare biconjugate gradient stabilized method for solver
 
@@ -107,21 +109,25 @@ void sim(int argc, char **argv){
     ParticleDataBase3D pdb(geom);  //initialise particle database
     //pdb.set_surface_collision(true); 
 
-    Emittance emit;  //declare emittance statistics class. no idea about the math, but qualitatively its a measure of beam quality
-    Convergence conv;
-    conv.add_epot(epot);
-    conv.add_scharge(scharge);
-    conv.add_emittance(0, emit);
+    // Emittance emit;  //declare emittance statistics class. no idea about the math, but qualitatively its a measure of beam quality
+    // Convergence conv;
+    // conv.add_epot(epot);
+    // conv.add_scharge(scharge);
+    // conv.add_emittance(0, emit);
 
     //particle declaration loop
     /*
     * We randomly sample n points on a sphere as particles in our system. 
     * A
     */
+   solver.solve(epot, scharge);
+    efield.recalculate();
 
     for (long i = 1; i <= N_clouds; i++ ){
         pdb.add_particle(IQ, 1, m, sample(anode_r));
     }
+    
+    pdb.iterate_trajectories(scharge, efield, bfield);
 
 }
 
