@@ -128,6 +128,23 @@ void sim(int argc, char **argv){
     }
     
     pdb.iterate_trajectories(scharge, efield, bfield);
+    MeshScalarField tdens(geom);
+    pdb.build_trajectory_density_field(tdens);
+
+    GeomPlotter gplotter(geom);
+    gplotter.set_size(2048, 2048);
+    gplotter.set_view(VIEW_XZ, n_nodes_z/2);
+    gplotter.set_epot(&epot);
+    gplotter.set_particle_database(&pdb);
+    gplotter.set_particle_div(0); // plot all particles
+    gplotter.set_trajdens(&tdens);
+    gplotter.set_fieldgraph_plot(FIELD_TRAJDENS);
+    gplotter.plot_png("trajdens_xz_1000.png");
+
+    gplotter.set_size(2048, 2048);
+    gplotter.set_view(VIEW_XZ, -1);
+    gplotter.set_epot(&epot);
+    gplotter.plot_png("-1_xz_final_1000.png");
 
 }
 
