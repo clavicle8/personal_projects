@@ -140,6 +140,10 @@ void sim(int argc, char **argv){
     gplotter.set_trajdens(&tdens);
     gplotter.set_fieldgraph_plot(FIELD_TRAJDENS);
     gplotter.plot_png("trajdens_xz_1000.png");
+    
+    gplotter.set_particle_database(NULL);
+    gplotter.set_trajdens(NULL);
+    gplotter.set_fieldgraph_plot(FIELD_EPOT);
 
     gplotter.set_size(2048, 2048);
     gplotter.set_view(VIEW_XZ, -1);
