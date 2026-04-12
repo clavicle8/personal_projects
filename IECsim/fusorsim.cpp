@@ -111,6 +111,8 @@ void sim(){
 
     // geom.build_mesh(); //create node mesh
     // //geom.build_surface(); //create surfaces on the solids so that the code can recognise when particles hit the surfaces. 
+
+    
     
     
     EpotBiCGSTABSolver solver(geom); //declare biconjugate gradient stabilized method for solver
