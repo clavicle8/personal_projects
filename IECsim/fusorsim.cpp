@@ -55,7 +55,7 @@ const double q = 1; //e
 // const double a = sqrt(k*T_0/m);
 
 double h = 0.0003; //mesh cell size
-double cathodepot = 5000.0; //cathode and anode potentials in volts
+double cathodepot = -5000.0; //cathode and anode potentials in volts
 double anodepot = 0.0; 
 double anode_r = 15*1.33 * 1e-3; //(roughly 19.95mm)
 
@@ -133,14 +133,14 @@ void sim(int argc, char **argv){
 
     GeomPlotter gplotter(geom);
     gplotter.set_size(2048, 2048);
-    gplotter.set_view(VIEW_XZ, n_nodes_z/2);
+    gplotter.set_view(VIEW_XZ, -1);
     gplotter.set_epot(&epot);
     gplotter.set_particle_database(&pdb);
     gplotter.set_particle_div(0); // plot all particles
     gplotter.set_trajdens(&tdens);
     gplotter.set_fieldgraph_plot(FIELD_TRAJDENS);
     gplotter.plot_png("trajdens_xz_1000.png");
-    
+
     gplotter.set_particle_database(NULL);
     gplotter.set_trajdens(NULL);
     gplotter.set_fieldgraph_plot(FIELD_EPOT);

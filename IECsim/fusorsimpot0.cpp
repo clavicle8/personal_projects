@@ -27,40 +27,13 @@
 
 using namespace std;
 
-double h = 0.0003; //mesh cell size
-double cathodepot = 5000.0; //cathode and anode potentials in volts
-double anodepot = 0.0; 
-double anode_r = 15*1.33 * 1e-3; //(roughly 19.95mm)
-
-
-double sim_x = 0.048+0.03175; 
-double sim_y = 0.096;  //measured half
-double sim_z = 0.063;  //measured half (radius)
-
-int n_nodes_x = (int) (sim_x/h);
-int n_nodes_y = (int) (sim_y/h);
-int n_nodes_z = (int) (sim_z/h);
-
 void sim(int argc, char **argv){
-    Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(-0.03175,-0.048,-0.03175), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
-
-    Solid *s1 = new STLSolid("dn63 tee.stl");
-    geom.set_solid(7,s1);
-    Solid *s2 = new STLSolid("cathodegrid_correct_wire.stl");
-    geom.set_solid(8,s2);
-    Solid *s3 = new STLSolid("anodegrid_correct_wire.stl");
-    geom.set_solid(9,s3);
-    
-    for (uint32_t i = 1; i <= 6; i++){ //loop to set Neumann boundary condition for 6 simulation space faces
-        geom.set_boundary(i, Bound(BOUND_NEUMANN, 0.0));
-    }
-
-    geom.set_boundary(7, Bound(BOUND_DIRICHLET, 0.0));
-    geom.set_boundary(8, Bound(BOUND_DIRICHLET, cathodepot));
-    geom.set_boundary(9, Bound(BOUND_DIRICHLET, anodepot));
-
-    geom.build_mesh(); //create node mesh
-    //geom.build_surface(); //create surfaces on the solids so that the code can recognise when particles hit the surfaces.
+    string geom_fn = "geom.dat";
+    ifstream is_geom(geom_fn.c_str());
+    if (!is_geom.good())
+        throw( Error( ERROR_LOCATION, (std::string)"couldn\'t open file \'" + geom_fn + "\'" ) );
+    Geometry geom( is_geom );
+    is_geom.close();
     EpotBiCGSTABSolver solver(geom); //declare biconjugate gradient stabilized method for solver
 
     EpotField epot(geom); //declare epot field, space charge, b field objects
