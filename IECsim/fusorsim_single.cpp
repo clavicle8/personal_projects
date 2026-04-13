@@ -1,8 +1,5 @@
 /*
-*PIC Vlasov-Poisson Iterator
-*Goal: produce a convergent potential map for a tee-fusor system to see if we can get a relatively uniform field
-*using a second anode grid, and get a double potential well setup
-*Second goal: see if it works with a fully spherical chamber and grids. 
+*single particle tracker
 */
 
 
@@ -102,7 +99,7 @@ void sim(int argc, char **argv){
 
     Solid *s1 = new STLSolid("dn63 tee.stl");
     geom.set_solid(7,s1);
-    Solid *s2 = new STLSolid("cathodegrid_correct_wire.stl");
+    Solid *s2 = new STLSolid("cathodegridnostalk.stl");
     geom.set_solid(8,s2);
     Solid *s3 = new STLSolid("anodegrid_correct_wire.stl");
     geom.set_solid(9,s3);
@@ -138,7 +135,7 @@ void sim(int argc, char **argv){
     * We randomly sample n points on a sphere as particles in our system. 
     * A
     */
-   solver.solve(epot, scharge);
+    solver.solve(epot, scharge);
     efield.recalculate();
 
     for (long i = 1; i <= N_clouds; i++ ){

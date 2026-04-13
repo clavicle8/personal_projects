@@ -2,7 +2,13 @@
 *PIC Vlasov-Poisson Iterator
 *Goal: produce a convergent potential map for a tee-fusor system to see if we can get a relatively uniform field
 *using a second anode grid, and get a double potential well setup
-*Second goal: see if it works with a fully spherical chamber and grids. 
+*Second goal: see if it works with a fully spherical chamber and grids.
+
+
+
+
+* current sim:
+* 1000 particles
 */
 
 
@@ -35,16 +41,16 @@
 
 using namespace std;
 
-//physical parameters
-//const double u = 1.66053906892; //atomic mass unit
-const double T_0 = 20.0 + 273.0;//starting temperature
-const double V = 337126.98779 * 1e-9; //calculated from CAD
-const double R_const = 8.314; //(joules per mole per kelvin)
-const double k = 1.3806488 * 1e-23; //boltzmann constant
-const double p_mbar = 9 * 1e-3; 
-const double n = p_mbar/(k*T_0); //number density
-const long N_lab = round(n*V); //lab no. of particles. comes out as 750041320067570 particles: too many.
-// can simplify by treating particles as "clouds" (Vlasov 1950)
+// //physical parameters
+// //const double u = 1.66053906892; //atomic mass unit
+// const double T_0 = 20.0 + 273.0;//starting temperature
+// const double V = 337126.98779 * 1e-9; //calculated from CAD
+// const double R_const = 8.314; //(joules per mole per kelvin)
+// const double k = 1.3806488 * 1e-23; //boltzmann constant
+// const double p_mbar = 9 * 1e-3; 
+// const double n = p_mbar/(k*T_0); //number density
+// const long N_lab = round(n*V); //lab no. of particles. comes out as 750041320067570 particles: too many.
+// // can simplify by treating particles as "clouds" (Vlasov 1950)
 const double beam_current = 2.0 *1e-3;
 const long N_clouds = 1000;
 const double IQ = beam_current/((double) N_clouds);
@@ -76,19 +82,27 @@ double gaussian(){
     return d1(gen);  //pluck a random number from the gaussian
 }
 
-ParticleP3D sample(double rad){ //samples a point on a sphere of radius r
-    double x = gaussian();
-    double y = gaussian();
-    double z = gaussian();
-    double normalisation = 1/pow(x*x + y*y + z*z ,0.5); //Muller 1959, Marsaglia 1972, as seen in Weisstein (Wolfram Mathworld)
-    double x_f = x * normalisation * rad;
-    double y_f = y * normalisation * rad;
-    double z_f = z * normalisation * rad;
-    //return Vec3D(x * normalisation * anode_r, y * normalisation * anode_r, z * normalisation * anode_r);
+ParticleP3D sample(double rad, const Geometry &geom) {
+    while (true) {
+        double x = gaussian();// 3 gaussian random variables.
+        double y = gaussian();
+        double z = gaussian();
+        double normalisation = 1/pow(x*x + y*y + z*z, 0.5); //normalisation factor
+        double x_f = x * normalisation * rad;  
+        double y_f = y * normalisation * rad;
+        double z_f = z * normalisation * rad;
 
-    return ParticleP3D(0, x_f, 0.0 , y_f, 0.0, z_f, 0.0);
+        if (geom.inside(Vec3D(x_f, y_f, z_f)) == 0){ //checks if position is inside solid
+            return ParticleP3D(0, x_f, 0.0, y_f, 0.0, z_f, 0.0);  //if not, return the particle definition.
+        }
+    }
 }
 
+void add_particles(ParticleDataBase3D &pdb, Geometry &geom) {
+    for (long i = 1; i <= N_clouds; i++ ){
+        pdb.add_particle(IQ, 1, m, sample(anode_r,geom));
+    }
+}
 
 void sim(int argc, char **argv){
     // string geom_fn = "geom.dat";
@@ -126,26 +140,42 @@ void sim(int argc, char **argv){
     EpotEfield efield(epot); //declare e field
     ParticleDataBase3D pdb(geom);  //initialise particle database
     //pdb.set_surface_collision(true); 
+    
 
     // Emittance emit;  //declare emittance statistics class. no idea about the math, but qualitatively its a measure of beam quality
     // Convergence conv;
     // conv.add_epot(epot);
     // conv.add_scharge(scharge);
     // conv.add_emittance(0, emit);
-
-    //particle declaration loop
-    /*
-    * We randomly sample n points on a sphere as particles in our system. 
-    * A
-    */
-   solver.solve(epot, scharge);
+    solver.solve(epot,scharge);
     efield.recalculate();
 
-    for (long i = 1; i <= N_clouds; i++ ){
-        pdb.add_particle(IQ, 1, m, sample(anode_r));
-    }
-    
-    pdb.iterate_trajectories(scharge, efield, bfield);
+
+
+    //vlasov loop
+    // for (int j = 1; j<=10; j++){ //iterate just 10 times to see what is going on
+    //     solver.solve(epot,scharge); //solve for potential based on existing and space charge
+    //     efield.recalculate(); //recalculate efield
+    //     pdb.clear(); //clear last particle declaration
+    //     add_particles(pdb,geom);  //add new particles
+    //     pdb.iterate_trajectories(scharge, efield, bfield);  //re-iterate
+    //     conv.evaluate_iteration();//evaluate convergence
+    // }
+
+    // ofstream ofconv( "fusorsim_conv_1_10.dat" );
+    // conv.print_history( ofconv );
+    // ofconv.close(); //prints convergence data
+    // //will add function to check epot error manually.
+
+    /*
+    * Epot error
+    * since range is from 0 to 5000V, an error of 2V (0.04%) would be reasonable resolution. 
+    * cannot directly use convergence header: evaluate_convergence returns void. wouldn't want to manually change 
+    * and recompile the library due to time constraints. possible to write here, just follow same structure as that
+    * in convergence.cpp lines 62-88
+    */
+
+
     MeshScalarField tdens(geom);
     pdb.build_trajectory_density_field(tdens);
 
@@ -169,25 +199,27 @@ void sim(int argc, char **argv){
     gplotter.set_epot(&epot);
     gplotter.plot_png("-1_xz_final_1000_3.png");
 
-    ofstream ostr("potential_radial.dat");
-    ostr << "# r (m)    potential (V)\n";
-    for (uint32_t a = 0; a < geom.size(0); a++) {
-    double x = geom.origo(0) + a * geom.h();
-    double y = 0.0;
-    double z = 0.0;
-    // find node indices for y=0, z=0
-    uint32_t b = (uint32_t)((y - geom.origo(1)) / geom.h());
-    uint32_t c = (uint32_t)((z - geom.origo(2)) / geom.h());
-    double r = x; // radial distance along x axis
-    ostr << setw(14) << r << " " << setw(14) << epot(a, b, c) << "\n";
-}
-ostr.close();   
+    ofstream otraj("trajectory_lengths.dat");
+    otraj << "# particle    length (m)\n";
+    for (size_t i = 0; i < pdb.size(); i++) {
+        otraj << setw(6) << i << " " << setw(14) << pdb.traj_length(i) << "\n";
+    }
+    otraj.close();
+
+    ofstream opot("potential_radial.dat");
+    opot << "# r (m)    potential (V)\n";
+    uint32_t b = 160;
+    uint32_t c = 105;
+    for (uint32_t a = 105; a < geom.size(0); a++) {
+        double r = (a - 105) * h;
+        opot << setw(14) << r << " " << setw(14) << epot(a, b, c) << "\n";
+    }
+    opot.close();
 
 }
 
 
-int main( int argc, char **argv )
-{
+int main(int argc, char **argv){
     try {
 	ibsimu.set_message_threshold( MSG_VERBOSE, 1 );
 	ibsimu.set_thread_count( 4 );
@@ -199,3 +231,6 @@ int main( int argc, char **argv )
 
     return( 0 );
 }
+
+
+

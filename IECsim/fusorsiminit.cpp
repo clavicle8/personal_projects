@@ -44,7 +44,7 @@ void init(){
 
     Solid *s1 = new STLSolid("dn63 tee.stl");
     geom.set_solid(7,s1);
-    Solid *s2 = new STLSolid("cathodegrid_correct_wire.stl");
+    Solid *s2 = new STLSolid("cathodegridnostalk.stl");
     geom.set_solid(8,s2);
     Solid *s3 = new STLSolid("anodegrid_correct_wire.stl");
     geom.set_solid(9,s3);
