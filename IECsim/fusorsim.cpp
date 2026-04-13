@@ -143,9 +143,9 @@ void sim(int argc, char **argv){
     
 
     // Emittance emit;  //declare emittance statistics class. no idea about the math, but qualitatively its a measure of beam quality
-    // Convergence conv;
-    // conv.add_epot(epot);
-    // conv.add_scharge(scharge);
+    Convergence conv;
+    conv.add_epot(epot);
+    conv.add_scharge(scharge);
     // conv.add_emittance(0, emit);
     solver.solve(epot,scharge);
     efield.recalculate();
@@ -153,19 +153,20 @@ void sim(int argc, char **argv){
 
 
     //vlasov loop
-    // for (int j = 1; j<=10; j++){ //iterate just 10 times to see what is going on
-    //     solver.solve(epot,scharge); //solve for potential based on existing and space charge
-    //     efield.recalculate(); //recalculate efield
-    //     pdb.clear(); //clear last particle declaration
-    //     add_particles(pdb,geom);  //add new particles
-    //     pdb.iterate_trajectories(scharge, efield, bfield);  //re-iterate
-    //     conv.evaluate_iteration();//evaluate convergence
-    // }
+    for (int j = 1; j<=2; j++){ //iterate just 10 times to see what is going on
+        solver.solve(epot,scharge); //solve for potential based on existing and space charge
+        efield.recalculate(); //recalculate efield
+        pdb.clear(); //clear last particle declaration
+        add_particles(pdb,geom);  //add new particles
+        pdb.iterate_trajectories(scharge, efield, bfield);  //re-iterate
+        conv.evaluate_iteration();//evaluate convergence
+    }
+    //plot potential after each loop
 
-    // ofstream ofconv( "fusorsim_conv_1_10.dat" );
-    // conv.print_history( ofconv );
-    // ofconv.close(); //prints convergence data
-    // //will add function to check epot error manually.
+    ofstream ofconv( "fusorsim_conv_1_10.dat" );
+    conv.print_history( ofconv );
+    ofconv.close(); //prints convergence data
+    //will add function to check epot error manually.
 
     /*
     * Epot error
