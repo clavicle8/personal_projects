@@ -27,7 +27,7 @@
 using namespace std;
 
 double h = 0.0003; //mesh cell size
-double cathodepot = 5000.0; //cathode and anode potentials in volts
+double cathodepot = -5000.0; //cathode and anode potentials in volts
 double anodepot = 0.0; 
 double anode_r = 15*1.33 * 1e-3; //(roughly 19.95mm)
 
@@ -58,7 +58,7 @@ void init(){
     geom.set_boundary(9, Bound(BOUND_DIRICHLET, anodepot));
 
     geom.build_mesh(); //create node mesh
-    //geom.build_surface(); //create surfaces on the solids so that the code can recognise when particles hit the surfaces. 
+    geom.build_surface(); //create surfaces on the solids so that the code can recognise when particles hit the surfaces. 
     geom.save("geom.dat", true);
 }
 

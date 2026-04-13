@@ -50,37 +50,11 @@ void sim(int argc, char **argv){
     gplotter.set_epot(&epot);
     gplotter.plot_png("-1_xz.png");
 
-    gplotter.set_size(2048, 2048);
     gplotter.set_view(VIEW_XY, -1);
     gplotter.plot_png("0_xy.png");
 
-
-    // ofstream ostr( "solver3d_sphere.dat" );  //output file stream
-    // ostr << "# "
-    //  << setw(12) << "x (m)" << " " 
-    //  << setw(14) << "y (m)" << " " 
-    //  << setw(14) << "z (m)" << " " 
-    //  << setw(14) << "r (m)" << " " 
-    //  << setw(14) << "potential (V)" << " ";  //numerical solution 
-    // for( uint32_t a = 0; a < geom.size(0); a++ ) {
-    // for( uint32_t b = 0; b < geom.size(1); b++ ) {
-    //     for( uint32_t c = 0; c < geom.size(2); c++ ) {
-    //     double x = a*geom.h();
-    //     double y = b*geom.h();
-    //     double z = c*geom.h();
-    //     double r = sqrt(x*x + y*y + z*z); //radial distance to mesh node
-    //     double e = epot(a,b,c);
-    //     ostr << setw(14) << x << " " 
-    //          << setw(14) << y << " " 
-    //          << setw(14) << z << " " 
-    //          << setw(14) << r << " " 
-    //          << setw(14) << e << " ";
-
-    //     }
-    // }
-    // }
-
-    // ostr.close();
+    gplotter.set_view(VIEW_YZ,-1);
+    gplotter.plot_png("-1_yz.png");
     
 }
 

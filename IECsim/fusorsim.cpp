@@ -105,31 +105,31 @@ void add_particles(ParticleDataBase3D &pdb, Geometry &geom) {
 }
 
 void sim(int argc, char **argv){
-    // string geom_fn = "geom.dat";
-    // ifstream is_geom(geom_fn.c_str());
-    // if (!is_geom.good())
-    //     throw( Error( ERROR_LOCATION, (std::string)"couldn\'t open file \'" + geom_fn + "\'" ) );
-    // Geometry geom( is_geom );
-    // is_geom.close();
-    //geom.build_surface();
-    Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(-0.03175,-0.048,-0.03175), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
+    string geom_fn = "geom.dat";
+    ifstream is_geom(geom_fn.c_str());
+    if (!is_geom.good())
+        throw( Error( ERROR_LOCATION, (std::string)"couldn\'t open file \'" + geom_fn + "\'" ) );
+    Geometry geom( is_geom );
+    is_geom.close();
+    geom.build_surface();
+    // Geometry geom(MODE_3D, Int3D(n_nodes_x, n_nodes_y, n_nodes_z), Vec3D(-0.03175,-0.048,-0.03175), h); //define geometry. cuboid with same x,y,z dimensions as tee. 
 
-    Solid *s1 = new STLSolid("dn63 tee.stl");
-    geom.set_solid(7,s1);
-    Solid *s2 = new STLSolid("cathodegrid_correct_wire.stl");
-    geom.set_solid(8,s2);
-    Solid *s3 = new STLSolid("anodegrid_correct_wire.stl");
-    geom.set_solid(9,s3);
+    // Solid *s1 = new STLSolid("dn63 tee.stl");
+    // geom.set_solid(7,s1);
+    // Solid *s2 = new STLSolid("cathodegrid_correct_wire.stl");
+    // geom.set_solid(8,s2);
+    // Solid *s3 = new STLSolid("anodegrid_correct_wire.stl");
+    // geom.set_solid(9,s3);
     
-    for (uint32_t i = 1; i <= 6; i++){ //loop to set Neumann boundary condition for 6 simulation space faces
-        geom.set_boundary(i, Bound(BOUND_NEUMANN, 0.0));
-    }
+    // for (uint32_t i = 1; i <= 6; i++){ //loop to set Neumann boundary condition for 6 simulation space faces
+    //     geom.set_boundary(i, Bound(BOUND_NEUMANN, 0.0));
+    // }
 
-    geom.set_boundary(7, Bound(BOUND_DIRICHLET, 0.0));
-    geom.set_boundary(8, Bound(BOUND_DIRICHLET, cathodepot));
-    geom.set_boundary(9, Bound(BOUND_DIRICHLET, anodepot));
+    // geom.set_boundary(7, Bound(BOUND_DIRICHLET, 0.0));
+    // geom.set_boundary(8, Bound(BOUND_DIRICHLET, cathodepot));
+    // geom.set_boundary(9, Bound(BOUND_DIRICHLET, anodepot));
 
-    geom.build_mesh(); //create node mesh
+    // geom.build_mesh(); //create node mesh
 
     EpotBiCGSTABSolver solver(geom); //declare biconjugate gradient stabilized method for solver
 
@@ -184,11 +184,13 @@ void sim(int argc, char **argv){
     gplotter.set_size(2048, 2048);
     gplotter.set_view(VIEW_XZ, -1);
     gplotter.set_ranges(-0.03175, -0.03175, 0.04745, 0.03095);
+
+    //plot trajectories
     gplotter.set_epot(&epot);
     gplotter.set_particle_database(&pdb);
     gplotter.set_particle_div(1); // plot all particles
     gplotter.set_trajdens(&tdens);
-    gplotter.set_fieldgraph_plot(FIELD_TRAJDENS);
+    gplotter.set_fieldgraph_plot(FIELD_TRAJDENS); //named so due to historical reasons?? idk its IBSimu convention
     gplotter.plot_png("trajdens_xz_1000_3.png");
 
     gplotter.set_particle_database(NULL);
@@ -200,6 +202,7 @@ void sim(int argc, char **argv){
     gplotter.set_epot(&epot);
     gplotter.plot_png("-1_xz_final_1000_3.png");
 
+    //used to plot number of particles against trajectory length to see what the distribution is like.
     ofstream otraj("trajectory_lengths.dat");
     otraj << "# particle    length (m)\n";
     for (size_t i = 0; i < pdb.size(); i++) {
@@ -209,11 +212,11 @@ void sim(int argc, char **argv){
 
     ofstream opot("potential_radial.dat");
     opot << "# r (m)    potential (V)\n";
-    uint32_t b = 160;
-    uint32_t c = 105;
-    for (uint32_t a = 105; a < geom.size(0); a++) {
-        double r = (a - 105) * h;
-        opot << setw(14) << r << " " << setw(14) << epot(a, b, c) << "\n";
+    uint32_t a = 105; //central x node index. calculated using 0 - (-0.03175)/0.0003 = 105
+    uint32_t b = 160; //central y node index. calculated using 0 - (-0.048)/0.0003 = 160
+    for (uint32_t c = 105; c < geom.size(2); c++) { //looping through c, i.e. along z axis from centre outward
+        double r = (c - 105) * h; //convert node index to physical distance from centre
+        opot << setw(14) << r << " " << setw(14) << epot(a, b, c) << "\n"; //keep a and b constant so only scan along z axis
     }
     opot.close();
 
