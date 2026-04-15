@@ -210,15 +210,40 @@ void sim(int argc, char **argv){
     }
     otraj.close();
 
-    ofstream opot("potential_radial.dat");
-    opot << "# r (m)    potential (V)\n";
-    uint32_t a = 105; //central x node index. calculated using 0 - (-0.03175)/0.0003 = 105
-    uint32_t b = 160; //central y node index. calculated using 0 - (-0.048)/0.0003 = 160
-    for (uint32_t c = 105; c < geom.size(2); c++) { //looping through c, i.e. along z axis from centre outward
-        double r = (c - 105) * h; //convert node index to physical distance from centre
-        opot << setw(14) << r << " " << setw(14) << epot(a, b, c) << "\n"; //keep a and b constant so only scan along z axis
+    // centre node indices
+    // x centre: (0 - (-0.03175)) / 0.0003 = 105
+    // y centre: (0 - (-0.048))   / 0.0003 = 160
+    // z centre: (0 - (-0.03175)) / 0.0003 = 105
+    const uint32_t cx = 105;
+    const uint32_t cy = 160;
+    const uint32_t cz = 105;
+
+    // scan along x axis
+    ofstream opot_x("potential_radial_x.dat");
+    opot_x << "# r (m)    potential (V)\n";
+    for (uint32_t a = cx; a < geom.size(0); a++) {
+        double r = (a - cx) * h;
+        opot_x << setw(14) << r << " " << setw(14) << epot(a, cy, cz) << "\n";
     }
-    opot.close();
+    opot_x.close();
+
+    // scan along y axis
+    ofstream opot_y("potential_radial_y.dat");
+    opot_y << "# r (m)    potential (V)\n";
+    for (uint32_t b = cy; b < geom.size(1); b++) {
+        double r = (b - cy) * h;
+        opot_y << setw(14) << r << " " << setw(14) << epot(cx, b, cz) << "\n";
+    }
+    opot_y.close();
+
+    // scan along z axis
+    ofstream opot_z("potential_radial_z.dat");
+    opot_z << "# r (m)    potential (V)\n";
+    for (uint32_t c = cz; c < geom.size(2); c++) {
+        double r = (c - cz) * h;
+        opot_z << setw(14) << r << " " << setw(14) << epot(cx, cy, c) << "\n";
+    }
+    opot_z.close();
 
 }
 

@@ -41,20 +41,24 @@ void sim(int argc, char **argv){
     //MeshVectorField bfield; //empty: no b field limit 
 
     EpotEfield efield(epot); //declare e field
+    solver.set_eps(0.05);
     solver.solve(epot, scharge);
+    
 
     GeomPlotter gplotter(geom);
     gplotter.set_size(2048, 2048);
-    gplotter.set_view(VIEW_XZ, -1);
-
+    gplotter.set_ranges(-0.05,-0.05, 0.05,0.05);
+    gplotter.set_mesh(true);
     gplotter.set_epot(&epot);
-    gplotter.plot_png("-1_xz.png");
+    
+    // gplotter.set_view(VIEW_XZ, -1);
+    // gplotter.plot_png("-1_xz.png");
 
-    gplotter.set_view(VIEW_XY, -1);
-    gplotter.plot_png("0_xy.png");
+    // gplotter.set_view(VIEW_XY, -1);
+    // gplotter.plot_png("-1_xy.png");
 
     gplotter.set_view(VIEW_YZ,-1);
-    gplotter.plot_png("-1_yz.png");
+    gplotter.plot_png("-1_yz_0.05eps_wider.png");
     
 }
 
