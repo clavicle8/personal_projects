@@ -1,10 +1,12 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Load data for all three axes
-x = pd.read_csv('potential_radial_x.dat', sep='\s+', comment='#', header=None, names=['r', 'potential'])
-y = pd.read_csv('potential_radial_y.dat', sep='\s+', comment='#', header=None, names=['r', 'potential'])
-z = pd.read_csv('potential_radial_z.dat', sep='\s+', comment='#', header=None, names=['r', 'potential'])
+run = 'run2/'
+plots = run + 'plots/'
+
+x = pd.read_csv(run + 'potential_radial_x.dat', sep=r'\s+', comment='#', header=None, names=['r', 'potential'])
+y = pd.read_csv(run + 'potential_radial_y.dat', sep=r'\s+', comment='#', header=None, names=['r', 'potential'])
+z = pd.read_csv(run + 'potential_radial_z.dat', sep=r'\s+', comment='#', header=None, names=['r', 'potential'])
 
 fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
@@ -27,5 +29,4 @@ axes[2].set_title('Radial potential - Z axis')
 axes[2].grid(True)
 
 plt.tight_layout()
-plt.savefig('potential_radial_all_axes.png', dpi=150)
-plt.show()
+plt.savefig(plots + 'potential_radial_all_axes.png', dpi=150)

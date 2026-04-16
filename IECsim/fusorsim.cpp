@@ -44,7 +44,7 @@ z-long tube
 using namespace std;
 
 const double beam_current = 2.0 *1e-3;
-const long N_clouds = 1000;
+const long N_clouds = 10000;
 const double IQ = beam_current/((double) N_clouds);
 const double m = 28.0134;
 const double q = 1;
@@ -73,14 +73,18 @@ ParticleP3D sample(double rad, const Geometry &geom) {
     while (true) {
         double x = gaussian();
         double y = gaussian();
-        double z = gaussian();
-        double normalisation = 1/pow(x*x + y*y + z*z, 0.5);
+        double z = gaussian();  //define 3 gaussians for x y z components
+        double normalisation = 1/pow(x*x + y*y + z*z, 0.5);  //normalisation factor Weisstein, Eric W. "Sphere Point Picking." From MathWorld--A Wolfram Resource. https://mathworld.wolfram.com/SpherePointPicking.html
         double x_f = x * normalisation * rad;  
         double y_f = y * normalisation * rad;
-        double z_f = z * normalisation * rad;
+        double z_f = z * normalisation * rad;   
 
-        if (geom.inside(Vec3D(x_f, y_f, z_f)) == 0){
-            return ParticleP3D(0, x_f, 0.0, y_f, 0.0, z_f, 0.0);
+        int32_t i = (int32_t)((x_f - geom.origo(0)) / geom.h());   
+        int32_t j = (int32_t)((y_f - geom.origo(1)) / geom.h());
+        int32_t k = (int32_t)((z_f - geom.origo(2)) / geom.h());
+
+        if (geom.mesh(i, j, k) == 0){
+            return ParticleP3D(0, x_f, 0.0, y_f, 0.0, z_f, 0.0);  //check for bad particle definitions. If inside a solid node, keep looping in while true until good definition
         }
     }
 }
@@ -89,6 +93,22 @@ void add_particles(ParticleDataBase3D &pdb, Geometry &geom) {
     for (long i = 1; i <= N_clouds; i++ ){
         pdb.add_particle(IQ, 1, m, sample(anode_r, geom));
     }
+}
+
+
+double epot_max_error(const EpotField &epot, const EpotField &epot_old) {
+    double max = 0.0;
+    double norm2 = 0.0;
+    int nc = epot.nodecount();
+    for (int a = 0; a < nc; a++) {
+        double diff = fabs(epot(a) - epot_old(a));
+        if (diff > max)
+            max = diff;
+        norm2 += diff*diff;
+    }
+    ibsimu.message(1) << "Epot max error = " << max << " V\n";
+    ibsimu.message(1) << "Epot L2 norm = " << sqrt(norm2) << " V\n";
+    return max;
 }
 
 void sim(int argc, char **argv){
@@ -105,10 +125,12 @@ void sim(int argc, char **argv){
     EpotBiCGSTABSolver solver(geom);
 
     EpotField epot(geom);
+    EpotField epot_old(geom); //for convergence evaluation. stores last value
     MeshScalarField scharge(geom);
     MeshVectorField bfield;
 
     EpotEfield efield(epot);
+    
     ParticleDataBase3D pdb(geom);
     pdb.set_surface_collision(true);
 
@@ -125,6 +147,10 @@ void sim(int argc, char **argv){
         add_particles(pdb, geom);
         pdb.iterate_trajectories(scharge, efield, bfield);
         conv.evaluate_iteration();
+        if (j>1){
+            epot_max_error(epot,epot_old);
+        }
+        epot_old = epot;
     }
 
     ofstream ofconv(run + "fusorsim_conv_1_10.dat");
