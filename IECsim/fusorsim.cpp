@@ -112,7 +112,7 @@ double epot_max_error(const EpotField &epot, const EpotField &epot_old) {
 }
 
 void sim(int argc, char **argv){
-    string run = "run2/";
+    string run = "run3/";
 
     string geom_fn = "geom.dat";
     ifstream is_geom(geom_fn.c_str());
@@ -125,7 +125,7 @@ void sim(int argc, char **argv){
     EpotBiCGSTABSolver solver(geom);
 
     EpotField epot(geom);
-    EpotField epot_old(geom); //for convergence evaluation. stores last value
+    EpotField epot_old(geom);
     MeshScalarField scharge(geom);
     MeshVectorField bfield;
 
@@ -140,17 +140,66 @@ void sim(int argc, char **argv){
 
     solver.set_eps(0.05);
 
-    for (int j = 1; j <= 2; j++){
+    solver.solve(epot, scharge);
+    efield.recalculate();
+
+    GeomPlotter gplotter(geom);
+    gplotter.set_size(2048, 2048);
+    gplotter.set_epot(&epot);
+    gplotter.set_fieldgraph_plot(FIELD_EPOT);
+
+    gplotter.set_view(VIEW_XY, -1);
+    gplotter.set_ranges(-0.05, -0.05, 0.05, 0.05);
+    gplotter.plot_png((run + "epot_xy_initial.png").c_str());
+
+    gplotter.set_view(VIEW_XZ, -1);
+    gplotter.set_ranges(-0.05, -0.05, 0.05, 0.05);
+    gplotter.plot_png((run + "epot_xz_initial.png").c_str());
+
+    gplotter.set_view(VIEW_YZ, 105);
+    gplotter.set_ranges(-0.05, -0.05, 0.05, 0.05);
+    gplotter.plot_png((run + "epot_yz_x0_initial.png").c_str());
+
+    add_particles(pdb, geom);
+    pdb.iterate_trajectories(scharge, efield, bfield);
+
+    MeshScalarField tdens_initial(geom);
+    pdb.build_trajectory_density_field(tdens_initial);
+
+    gplotter.set_particle_database(&pdb);
+    gplotter.set_particle_div(1);
+    gplotter.set_trajdens(&tdens_initial);
+    gplotter.set_fieldgraph_plot(FIELD_TRAJDENS);
+
+    gplotter.set_view(VIEW_XY, -1);
+    gplotter.set_ranges(-0.05, -0.05, 0.05, 0.05);
+    gplotter.plot_png((run + "trajdens_xy_initial.png").c_str());
+
+    gplotter.set_view(VIEW_XZ, -1);
+    gplotter.set_ranges(-0.05, -0.05, 0.05, 0.05);
+    gplotter.plot_png((run + "trajdens_xz_initial.png").c_str());
+
+    gplotter.set_view(VIEW_YZ, 105);
+    gplotter.set_ranges(-0.05, -0.05, 0.05, 0.05);
+    gplotter.plot_png((run + "trajdens_yz_x0_initial.png").c_str());
+
+    gplotter.set_particle_database(NULL);
+    gplotter.set_trajdens(NULL);
+
+    double error = 1e10;
+    int j = 1;
+    while (error > 5.0) {
         solver.solve(epot, scharge);
         efield.recalculate();
         pdb.clear();
         add_particles(pdb, geom);
         pdb.iterate_trajectories(scharge, efield, bfield);
         conv.evaluate_iteration();
-        if (j>1){
-            epot_max_error(epot,epot_old);
+        if (j > 1){
+            error = epot_max_error(epot, epot_old);
         }
         epot_old = epot;
+        j++;
     }
 
     ofstream ofconv(run + "fusorsim_conv_1_10.dat");
@@ -160,8 +209,6 @@ void sim(int argc, char **argv){
     MeshScalarField tdens(geom);
     pdb.build_trajectory_density_field(tdens);
 
-    GeomPlotter gplotter(geom);
-    gplotter.set_size(2048, 2048);
     gplotter.set_epot(&epot);
     gplotter.set_particle_database(&pdb);
     gplotter.set_particle_div(1);

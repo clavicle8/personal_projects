@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-run = 'run2/'
+run = 'run3/'
 plots = run + 'plots/'
 
 df = pd.read_csv(run + 'trajectory_lengths.dat', sep=r'\s+', comment='#', header=None, names=['particle', 'length'])
