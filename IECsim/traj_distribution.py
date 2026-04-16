@@ -2,11 +2,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-df = pd.read_csv('trajectory_lengths.dat', sep='\s+', comment='#', header=None, names=['particle', 'length'])
+df = pd.read_csv('trajectory_lengths.dat', sep=r'\s+', comment='#', header=None, names=['particle', 'length'])
 df.to_csv('trajectory_lengths.csv', index=False)
 
 fig, ax = plt.subplots(figsize=(10,7))
 ax.hist(df['length'], bins=50)
 ax.set_xlabel('trajectory length (m)')
 ax.set_ylabel('number of particles')
-plt.show()
+plt.savefig('traj_distribution.png')

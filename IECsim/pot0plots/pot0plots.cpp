@@ -28,9 +28,9 @@
 using namespace std;
 
 void sim(int argc, char **argv){
-    string geom_fn = "geom.dat";
+    string geom_fn = "geom.dat"; //load geometry from dat file
     ifstream is_geom(geom_fn.c_str());
-    if (!is_geom.good())
+    if (!is_geom.good()) //error catching
         throw( Error( ERROR_LOCATION, (std::string)"couldn\'t open file \'" + geom_fn + "\'" ) );
     Geometry geom( is_geom );
     is_geom.close();

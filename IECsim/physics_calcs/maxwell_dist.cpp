@@ -1,0 +1,35 @@
+#include <cstdlib>
+#include <sstream>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <random>
+#include <map>
+#include <string>
+#include <cmath>
+
+ 
+
+using namespace std;
+const double pi = 3.14159265358979323846;
+const double k = 1.3806488 * 1e-23;
+const double R = 8.314;
+const double u = 1.6605390689252 * 1e-27;
+
+const double m = 2.0141017778 * u; // kg
+const double q = 1; //e
+//TODO: query directly from NIST database
+
+//Thermal gas molecule speed calculations
+const double T_0 = 20.0 + 273.0;//starting temperature
+const double V = 337126.98779 * 1e-9;
+ //boltzmann constant
+const double a = sqrt(k*T_0/m);
+
+int main(){
+    double mean_velo = 2*a*sqrt(2/pi);
+    //cout << a << "\n";
+    cout << "The mean velocity for a deuterium atom of mass " << m <<"kg"<< " is " << mean_velo << " m/s" << "\n";
+}
+
+//The mean velocity for a deuterium atom of mass 3.34449e-27kg is 1755.01 m/s
