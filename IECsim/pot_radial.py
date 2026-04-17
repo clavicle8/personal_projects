@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-run = 'run3/'
+run = 'run4/'
 plots = run + 'plots/'
 
 x = pd.read_csv(run + 'potential_radial_x.dat', sep=r'\s+', comment='#', header=None, names=['r', 'potential'])

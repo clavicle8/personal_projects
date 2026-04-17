@@ -44,9 +44,11 @@ z-long tube
 using namespace std;
 
 const double beam_current = 2.0 *1e-3;
-const long N_clouds = 10000;
+const long N_clouds = 100000;
 const double IQ = beam_current/((double) N_clouds);
-const double m = 28.0134;
+//const double m = 28.0134; //nitrogen molecule
+const double m = 2.0141017778; //deuterium
+
 const double q = 1;
 
 double h = 0.0003;
@@ -112,7 +114,7 @@ double epot_max_error(const EpotField &epot, const EpotField &epot_old) {
 }
 
 void sim(int argc, char **argv){
-    string run = "run3/";
+    string run = "run4/";
 
     string geom_fn = "geom.dat";
     ifstream is_geom(geom_fn.c_str());
@@ -186,9 +188,16 @@ void sim(int argc, char **argv){
     gplotter.set_particle_database(NULL);
     gplotter.set_trajdens(NULL);
 
-    double error = 1e10;
+    
+
+    double error = 1e10; //large initial number to make sure solver iterates twice.
     int j = 1;
-    while (error > 5.0) {
+    double error_thresh = 5.0; //volts. corresponds to 0.1% error with 5kV
+
+    ofstream oerr(run + "epot_error.dat");
+    oerr << "# iteration    epot_max_error (V)    epot_L2_norm (V)\n";
+
+    while (error > error_thresh && j <=20) {
         solver.solve(epot, scharge);
         efield.recalculate();
         pdb.clear();
@@ -196,11 +205,13 @@ void sim(int argc, char **argv){
         pdb.iterate_trajectories(scharge, efield, bfield);
         conv.evaluate_iteration();
         if (j > 1){
-            error = epot_max_error(epot, epot_old);
+        error = epot_max_error(epot, epot_old);
+        oerr << setw(10) << j << " " << setw(20) << error << "\n";
         }
         epot_old = epot;
         j++;
     }
+    oerr.close();
 
     ofstream ofconv(run + "fusorsim_conv_1_10.dat");
     conv.print_history(ofconv);
