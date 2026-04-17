@@ -265,27 +265,35 @@ void sim(int argc, char **argv){
     const uint32_t cy = 160;
     const uint32_t cz = 105;
 
+    // centre node indices
+    //x (0 -(-0.03175)) / 0.0003 = 105  (side tube)
+    //y  (0 -(-0.048))   / 0.0003 = 160  (vertical diameter of long tube)
+    //z(0 - (-0.03175)) / 0.0003 = 105  (long tube)
+
+    //radial scan along z (lengthways) 
     ofstream opot_z(run + "potential_radial_z.dat");
     opot_z << "# r (m)    potential (V)\n";
-    for (uint32_t c = cz; c < geom.size(2); c++) {
-        double r = (c - cz) * h;
-        opot_z << setw(14) << r << " " << setw(14) << epot(cx, cy, c) << "\n";
+    for (int32_t c = -(int32_t)cz; c < (int32_t)geom.size(2) - (int32_t)cz; c++) {
+        double r = c * h;
+        opot_z << setw(14) << r << " " << setw(14) << epot(cx, cy, cz + c) << "\n";
     }
     opot_z.close();
 
+    //radial scan along y axis (vertical tube) 
     ofstream opot_y(run + "potential_radial_y.dat");
     opot_y << "# r (m)    potential (V)\n";
-    for (uint32_t b = cy; b < geom.size(1); b++) {
-        double r = (b - cy) * h;
-        opot_y << setw(14) << r << " " << setw(14) << epot(cx, b, cz) << "\n";
+    for (int32_t b = -(int32_t)cy; b < (int32_t)geom.size(1) - (int32_t)cy; b++) {
+        double r = b * h;
+        opot_y << setw(14) << r << " " << setw(14) << epot(cx, cy + b, cz) << "\n";
     }
     opot_y.close();
 
+    //radial scan along x axis (side tube)
     ofstream opot_x(run + "potential_radial_x.dat");
     opot_x << "# r (m)    potential (V)\n";
-    for (uint32_t a = cx; a < geom.size(0); a++) {
-        double r = (a - cx) * h;
-        opot_x << setw(14) << r << " " << setw(14) << epot(a, cy, cz) << "\n";
+    for (int32_t a = -(int32_t)cx; a < (int32_t)geom.size(0) - (int32_t)cx; a++) {
+        double r = a * h;
+        opot_x << setw(14) << r << " " << setw(14) << epot(cx + a, cy, cz) << "\n";
     }
     opot_x.close();
 
