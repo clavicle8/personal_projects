@@ -64,6 +64,12 @@ int n_nodes_x = (int) (sim_x/h);
 int n_nodes_y = (int) (sim_y/h);
 int n_nodes_z = (int) (sim_z/h);
 
+const uint32_t cx = 105;
+const uint32_t cy = 160;
+const uint32_t cz = 105;
+
+int n_iter = 30;
+
 random_device rd1{};
 mt19937 gen{rd1()};
 normal_distribution<double> d1{0.0,1.0};  
@@ -145,6 +151,9 @@ void sim(int argc, char **argv){
     solver.solve(epot, scharge);
     efield.recalculate();
 
+
+    //PLOTTING + DATA FOR INITIAL POTENTIAL
+
     GeomPlotter gplotter(geom);
     gplotter.set_size(2048, 2048);
     gplotter.set_epot(&epot);
@@ -161,57 +170,64 @@ void sim(int argc, char **argv){
     gplotter.set_view(VIEW_YZ, 105);
     gplotter.set_ranges(-0.05, -0.05, 0.05, 0.05);
     gplotter.plot_png((run + "epot_yz_x0_initial.png").c_str());
-
-    add_particles(pdb, geom);
-    pdb.iterate_trajectories(scharge, efield, bfield);
-
-    MeshScalarField tdens_initial(geom);
-    pdb.build_trajectory_density_field(tdens_initial);
-
-    gplotter.set_particle_database(&pdb);
-    gplotter.set_particle_div(1);
-    gplotter.set_trajdens(&tdens_initial);
-    gplotter.set_fieldgraph_plot(FIELD_TRAJDENS);
-
-    gplotter.set_view(VIEW_XY, -1);
-    gplotter.set_ranges(-0.05, -0.05, 0.05, 0.05);
-    gplotter.plot_png((run + "trajdens_xy_initial.png").c_str());
-
-    gplotter.set_view(VIEW_XZ, -1);
-    gplotter.set_ranges(-0.05, -0.05, 0.05, 0.05);
-    gplotter.plot_png((run + "trajdens_xz_initial.png").c_str());
-
-    gplotter.set_view(VIEW_YZ, 105);
-    gplotter.set_ranges(-0.05, -0.05, 0.05, 0.05);
-    gplotter.plot_png((run + "trajdens_yz_x0_initial.png").c_str());
-
-    gplotter.set_particle_database(NULL);
-    gplotter.set_trajdens(NULL);
-
     
-
     double error = 1e10; //large initial number to make sure solver iterates twice.
     int j = 1;
     double error_thresh = 5.0; //volts. corresponds to 0.1% error with 5kV
 
-    ofstream oerr(run + "epot_error.dat");
+
+    ofstream opot_iter_z(run + "potential_radial_z_all.dat");  //open z radial pot datastream
+    opot_iter_z << "# iteration    r (m)    potential (V)\n";
+
+    ofstream opot_iter_y(run + "potential_radial_y_all.dat");//open y radial pot datastream
+    opot_iter_y << "# iteration    r (m)    potential (V)\n";
+
+    ofstream opot_iter_x(run + "potential_radial_x_all.dat");//open x radial pot datastream
+    opot_iter_x << "# iteration    r (m)    potential (V)\n";
+
+    ofstream oerr(run + "epot_error.dat"); //open epot_error convergence datastream
     oerr << "# iteration    epot_max_error (V)    epot_L2_norm (V)\n";
 
-    while (error > error_thresh && j <=20) {
+
+
+    //MAIN SELF-CONSISTENT LOOP
+    while (error > error_thresh && j <= n_iter) {
         solver.solve(epot, scharge);
         efield.recalculate();
         pdb.clear();
         add_particles(pdb, geom);
         pdb.iterate_trajectories(scharge, efield, bfield);
         conv.evaluate_iteration();
+
+        for (int32_t c = -(int32_t)cz; c < (int32_t)geom.size(2) - (int32_t)cz; c++) { //export z radial pot to .dat for this iteration
+        double r = c * h;
+        opot_iter_z << setw(10) << j << " " << setw(14) << r << " " << setw(14) << epot(cx, cy, cz + c) << "\n";
+        }
+        
+        for (int32_t c = -(int32_t)cy; c < (int32_t)geom.size(1) - (int32_t)cy; c++) { //export y radial pot to .dat for this iteration
+            double r = c * h;
+            opot_iter_y << setw(10) << j << " " << setw(14) << r << " " << setw(14) << epot(cx, cy + c, cz) << "\n";
+        }
+
+        for (int32_t c = -(int32_t)cx; c < (int32_t)geom.size(0) - (int32_t)cx; c++) { //export x radial pot to .dat for this iteration
+            double r = c * h;
+            opot_iter_x << setw(10) << j << " " << setw(14) << r << " " << setw(14) << epot(cx + c, cy, cz) << "\n";
+        }
+
         if (j > 1){
         error = epot_max_error(epot, epot_old);
         oerr << setw(10) << j << " " << setw(20) << error << "\n";
         }
+
         epot_old = epot;
         j++;
     }
+    opot_iter_z.close(); //close data streams
+    opot_iter_y.close();
+    opot_iter_x.close();
     oerr.close();
+
+    
 
     ofstream ofconv(run + "fusorsim_conv_1_10.dat");
     conv.print_history(ofconv);
@@ -260,10 +276,6 @@ void sim(int argc, char **argv){
         otraj << setw(6) << i << " " << setw(14) << pdb.traj_length(i) << "\n";
     }
     otraj.close();
-
-    const uint32_t cx = 105;
-    const uint32_t cy = 160;
-    const uint32_t cz = 105;
 
     // centre node indices
     //x (0 -(-0.03175)) / 0.0003 = 105  (side tube)
